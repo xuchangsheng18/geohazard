@@ -1,0 +1,75 @@
+# ============================================================
+# GeoHazard Multimodal Detection System — Default Config
+# ============================================================
+
+# --- Global ---
+seed: 42
+device: "cuda"
+output_dir: "./outputs"
+num_classes: 4                     # 0: fallen tree, 1: landslide, 2: road collapse, 3: stone
+class_names:                       # 与 YOLO data.yaml 一致
+  - "fallen tree"
+  - "landslide"
+  - "road collapse"
+  - "stone"
+mixed_precision: "fp16"
+
+# --- Visual Modality (YOLO11) ---
+vision:
+  model_name: "yolo11n.pt"        # YOLO11 预训练 backbone（备选）
+  custom_weights: "weights/best.pt"  # ← 你已训练好的 YOLO11 权重
+  data_yaml: "data/data.yaml"      # ← YOLO 数据集描述文件
+  input_size: [640, 640]
+  feature_dim: 512
+  freeze_backbone: true
+
+# --- Time-Series Modality (Sensors) ---
+# 传感器数据 (.npy/.csv) 放在 data/raw/{split}/sensors/，文件名与图像同名
+timeseries:
+  enabled: false                   # ← 当前无传感器数据，已关闭
+  input_channels: 6
+  seq_length: 256
+  d_model: 256
+  n_heads: 8
+  n_layers: 4
+  dropout: 0.1
+  feature_dim: 256
+
+# --- Text Modality (Reports) ---
+# 文本报告 (.txt) 放在 data/raw/{split}/reports/，文件名与图像同名
+text:
+  enabled: true                   # ← 当前无文本数据，已关闭
+  model_name: "bert-base-chinese"
+  max_length: 512
+  feature_dim: 256
+  freeze_backbone: true
+
+# --- Multimodal Fusion ---
+fusion:
+  method: "cross_attention"
+  hidden_dim: 512
+  num_heads: 8
+  num_layers: 4
+  dropout: 0.1
+  cross_attention:
+    query_modality: "vision"       # 🔥 修改 2：把 Query 改为视觉 (Vision)
+    key_value_modality: "text"     # 🔥 修改 3：把 Key/Value 改为文本 (Text)
+
+# --- Training ---
+training:
+  epochs: 50                       # 因为只微调融合层，50轮通常就够了
+  batch_size: 2                    # 跑 BERT 比较吃显存，如果显存爆了请改成 2
+  learning_rate: 1.0e-4
+  weight_decay: 1.0e-4
+  warmup_steps: 200                # epochs 减少，warmup 步数也相应减少一点
+  lr_scheduler: "cosine"
+  early_stopping_patience: 10
+  grad_clip_norm: 1.0
+
+# --- Data ---
+data:
+  root: "./data/raw"
+  yolo_config: "data/data.yaml"
+  sensor_dir: "senors"             # 🔥 修改 4：适配你截图里的拼写错误（如果文件夹改名了，这里请改回 sensors）
+  report_dir: "reports"
+  num_workers: 2

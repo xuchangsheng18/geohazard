@@ -1,0 +1,75 @@
+# ============================================================
+# GeoHazard Multimodal Detection System — Default Config
+# ============================================================
+
+# --- Global ---
+seed: 42
+device: "cuda"
+output_dir: "./outputs"
+num_classes: 4                     # 0: fallen tree, 1: landslide, 2: road collapse, 3: stone
+class_names:                       # 与 YOLO data.yaml 一致
+  - "fallen tree"
+  - "landslide"
+  - "road collapse"
+  - "stone"
+mixed_precision: "fp16"
+
+# --- Visual Modality (YOLO11) ---
+vision:
+  model_name: "yolo11n.pt"        # YOLO11 预训练 backbone（备选）
+  custom_weights: "weights/best.pt"  # ← 你已训练好的 YOLO11 权重
+  data_yaml: "data/data.yaml"      # ← YOLO 数据集描述文件
+  input_size: [640, 640]
+  feature_dim: 512
+  freeze_backbone: true
+
+# --- Time-Series Modality (Sensors) ---
+# 传感器数据 (.npy/.csv) 放在 data/raw/{split}/sensors/，文件名与图像同名
+timeseries:
+  enabled: false                   # ← 当前无传感器数据，已关闭
+  input_channels: 6
+  seq_length: 256
+  d_model: 256
+  n_heads: 8
+  n_layers: 4
+  dropout: 0.1
+  feature_dim: 256
+
+# --- Text Modality (Reports) ---
+# 文本报告 (.txt) 放在 data/raw/{split}/reports/，文件名与图像同名
+text:
+  enabled: true                   # ← 当前无文本数据，已关闭
+  model_name: "bert-base-chinese"
+  max_length: 512
+  feature_dim: 256
+  freeze_backbone: true
+
+# --- Multimodal Fusion ---
+fusion:
+  method: "concat"                 # 纯视觉时推荐 concat，多模态时推荐 cross_attention
+  hidden_dim: 512
+  num_heads: 8
+  num_layers: 4
+  dropout: 0.1
+  cross_attention:
+    query_modality: "timeseries"
+    key_value_modality: "vision"
+
+# --- Training ---
+training:
+  epochs: 100
+  batch_size: 4
+  learning_rate: 1.0e-4
+  weight_decay: 1.0e-4
+  warmup_steps: 1000
+  lr_scheduler: "cosine"
+  early_stopping_patience: 10
+  grad_clip_norm: 1.0
+
+# --- Data ---
+data:
+  root: "./data/raw"               # 数据集根目录（含 train/valid/test）
+  yolo_config: "data/data.yaml"    # YOLO 数据集配置
+  sensor_dir: "sensors"            # 传感器子目录（可选，data/raw/{split}/sensors/）
+  report_dir: "reports"            # 报告子目录（可选，data/raw/{split}/reports/）
+  num_workers: 2

@@ -1,0 +1,21 @@
+# ============================================================
+# GeoHazard Multimodal Detection System — Dependencies
+# ============================================================
+torch>=2.0.0
+torchvision>=0.15.0
+ultralytics>=8.3.0          # YOLO11 official SDK
+transformers>=4.40.0        # HuggingFace BERT / RoBERTa for text modality
+timm>=0.9.0                 # Vision Transformer backbones (optional)
+pandas>=2.0.0
+numpy>=1.24.0
+scipy>=1.10.0
+scikit-learn>=1.3.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+opencv-python>=4.8.0
+omegaconf>=2.3.0            # YAML config management
+pydantic>=2.0.0             # Config validation
+albumentations>=1.3.0       # Image augmentations
+wandb>=0.15.0               # Experiment tracking (optional)
+tqdm>=4.65.0
+loguru>=0.7.0               # Better logging
