@@ -8,7 +8,8 @@ from openai import OpenAI
 # ⚙️ 配置区域
 # ==========================================
 # 请替换为你的阿里云 DashScope API Key
-API_KEY = "sk-ajaccexvdwnmjmuawflmlomwtnlfhphoqrkpoznajaqgdtdj"
+# 我这里用的是硅基流动
+API_KEY = "你的api密钥"
 BASE_URL = "https://api.siliconflow.cn/v1"
 
 # 使用的模型：qwen-vl-max (效果最好) 或 qwen-vl-plus (性价比高)
